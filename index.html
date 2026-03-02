@@ -4,51 +4,70 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Cyber Hygiene Check | MartellCyberTech</title>
+
 <style>
-    body {
-        font-family: Arial, sans-serif;
-        background-color: #0f172a;
-        color: white;
-        padding: 20px;
-        max-width: 800px;
-        margin: auto;
-    }
-    h1 {
-        text-align: center;
-    }
-    .question {
-        margin-bottom: 20px;
-        padding: 15px;
-        background-color: #1e293b;
-        border-radius: 8px;
-    }
-    button {
-        padding: 12px 20px;
-        background-color: #22c55e;
-        border: none;
-        border-radius: 5px;
-        color: black;
-        font-weight: bold;
-        cursor: pointer;
-        width: 100%;
-        margin-top: 20px;
-    }
-    .result {
-        margin-top: 25px;
-        padding: 15px;
-        border-radius: 8px;
-        font-weight: bold;
-        text-align: center;
-    }
-    .low { background-color: #22c55e; color: black; }
-    .medium { background-color: #facc15; color: black; }
-    .high { background-color: #ef4444; }
+body {
+    font-family: Arial, sans-serif;
+    background-color: #0f172a;
+    color: white;
+    padding: 20px;
+    max-width: 800px;
+    margin: auto;
+}
+h1 {
+    text-align: center;
+}
+.question {
+    margin-bottom: 20px;
+    padding: 15px;
+    background-color: #1e293b;
+    border-radius: 8px;
+}
+button {
+    padding: 12px;
+    margin-top: 10px;
+    background-color: #22c55e;
+    border: none;
+    border-radius: 5px;
+    color: black;
+    font-weight: bold;
+    cursor: pointer;
+    width: 100%;
+}
+button:hover {
+    opacity: 0.9;
+}
+.result {
+    margin-top: 25px;
+    padding: 15px;
+    border-radius: 8px;
+    font-weight: bold;
+    text-align: center;
+}
+.low { background-color: #22c55e; color: black; }
+.medium { background-color: #facc15; color: black; }
+.high { background-color: #ef4444; }
+.share-section {
+    margin-top: 20px;
+    display: none;
+}
+.share-section button {
+    background-color: #38bdf8;
+    color: black;
+}
+.footer {
+    margin-top: 40px;
+    text-align: center;
+    font-size: 14px;
+    opacity: 0.7;
+}
 </style>
 </head>
+
 <body>
 
 <h1>🔐 Cyber Hygiene Self-Assessment</h1>
-<p>Answer honestly. This takes 2 minutes.</p>
+<p>Answer honestly. This takes less than 2 minutes.</p>
 
 <form id="quiz">
 
@@ -118,7 +137,21 @@
 
 <div id="result"></div>
 
+<div class="share-section" id="shareSection">
+    <h3>📣 Share Your Results!</h3>
+    <p>Tag <strong>@martellcybertech</strong> when you post.</p>
+    <button onclick="shareTwitter()">Share on X (Twitter)</button>
+    <button onclick="shareFacebook()">Share on Facebook</button>
+    <button onclick="copyText()">Copy Text for Instagram</button>
+</div>
+
+<div class="footer">
+MartellCyberTech | Digital Bodyguard Protection
+</div>
+
 <script>
+let finalMessage = "";
+
 function calculateScore() {
     let score = 0;
     for (let i = 1; i <= 10; i++) {
@@ -131,18 +164,40 @@ function calculateScore() {
     }
 
     let resultDiv = document.getElementById("result");
+    let shareSection = document.getElementById("shareSection");
+
     resultDiv.className = "result";
+    shareSection.style.display = "block";
 
     if (score >= 8) {
         resultDiv.classList.add("low");
-        resultDiv.innerHTML = "🟢 Low Risk – Great job! You practice strong cyber hygiene.";
+        finalMessage = "🟢 I scored LOW RISK on the Cyber Hygiene Check!";
+        resultDiv.innerHTML = finalMessage + "<br>Excellent cyber habits! 🔐";
     } else if (score >= 5) {
         resultDiv.classList.add("medium");
-        resultDiv.innerHTML = "🟡 Moderate Risk – You’re doing okay, but improvements are needed.";
+        finalMessage = "🟡 I scored MODERATE RISK on the Cyber Hygiene Check!";
+        resultDiv.innerHTML = finalMessage + "<br>Some improvements are needed.";
     } else {
         resultDiv.classList.add("high");
-        resultDiv.innerHTML = "🔴 High Risk – You may be vulnerable to cyber threats. Consider improving your security habits.";
+        finalMessage = "🔴 I scored HIGH RISK on the Cyber Hygiene Check!";
+        resultDiv.innerHTML = finalMessage + "<br>Time to strengthen your security habits.";
     }
+}
+
+function shareTwitter() {
+    const text = encodeURIComponent(finalMessage + " Take yours here: " + window.location.href + " @martellcybertech");
+    window.open("https://twitter.com/intent/tweet?text=" + text, "_blank");
+}
+
+function shareFacebook() {
+    const url = encodeURIComponent(window.location.href);
+    window.open("https://www.facebook.com/sharer/sharer.php?u=" + url, "_blank");
+}
+
+function copyText() {
+    const text = finalMessage + " I took the Cyber Hygiene Check! Take yours here: " + window.location.href + " Tag @martellcybertech";
+    navigator.clipboard.writeText(text);
+    alert("Copied! Paste into Instagram and tag @martellcybertech.");
 }
 </script>
 
