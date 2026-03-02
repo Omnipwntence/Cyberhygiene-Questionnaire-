@@ -4,201 +4,345 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Cyber Hygiene Check | MartellCyberTech</title>
-
 <style>
-body {
-    font-family: Arial, sans-serif;
-    background-color: #0f172a;
-    color: white;
-    padding: 20px;
-    max-width: 800px;
+  :root {
+    --bg: #0f172a;
+    --surface: #1e293b;
+    --surface-hover: #263548;
+    --green: #22c55e;
+    --yellow: #facc15;
+    --red: #ef4444;
+    --blue: #38bdf8;
+    --text: #f1f5f9;
+    --muted: #94a3b8;
+    --radius: 10px;
+    --font: 'Segoe UI', system-ui, sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: var(--font);
+    background-color: var(--bg);
+    color: var(--text);
+    padding: 24px 20px;
+    max-width: 720px;
     margin: auto;
-}
-h1 {
+    line-height: 1.6;
+  }
+
+  h1 {
     text-align: center;
-}
-.question {
+    font-size: clamp(1.4rem, 4vw, 2rem);
+    margin-bottom: 6px;
+  }
+
+  .subtitle {
+    text-align: center;
+    color: var(--muted);
+    margin-bottom: 24px;
+    font-size: 0.95rem;
+  }
+
+  /* Progress bar */
+  .progress-wrap {
+    background: var(--surface);
+    border-radius: 99px;
+    height: 8px;
+    margin-bottom: 6px;
+    overflow: hidden;
+  }
+  .progress-bar {
+    height: 100%;
+    background: var(--green);
+    border-radius: 99px;
+    width: 0%;
+    transition: width 0.3s ease;
+  }
+  .progress-label {
+    text-align: right;
+    font-size: 0.8rem;
+    color: var(--muted);
     margin-bottom: 20px;
-    padding: 15px;
-    background-color: #1e293b;
-    border-radius: 8px;
-}
-button {
-    padding: 12px;
-    margin-top: 10px;
-    background-color: #22c55e;
-    border: none;
-    border-radius: 5px;
-    color: black;
-    font-weight: bold;
+  }
+
+  /* Questions */
+  .question {
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: 16px 18px;
+    margin-bottom: 14px;
+    border: 1px solid transparent;
+    transition: border-color 0.2s;
+  }
+  .question.answered { border-color: #334155; }
+
+  .question-text {
+    font-size: 0.97rem;
+    margin-bottom: 12px;
+  }
+
+  .options {
+    display: flex;
+    gap: 10px;
+  }
+
+  .option-label {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 8px 12px;
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 6px;
     cursor: pointer;
+    font-size: 0.9rem;
+    transition: background 0.15s, border-color 0.15s;
+    user-select: none;
+  }
+  .option-label:hover { background: var(--surface-hover); border-color: #475569; }
+  .option-label input { accent-color: var(--green); }
+  .option-label:has(input:checked) {
+    background: #1a3a27;
+    border-color: var(--green);
+    color: var(--green);
+  }
+  .option-label:has(input[value="0"]:checked) {
+    background: #3a1c1c;
+    border-color: var(--red);
+    color: var(--red);
+  }
+
+  /* Submit button */
+  #submitBtn {
+    display: block;
     width: 100%;
-}
-button:hover {
-    opacity: 0.9;
-}
-.result {
-    margin-top: 25px;
-    padding: 15px;
-    border-radius: 8px;
-    font-weight: bold;
-    text-align: center;
-}
-.low { background-color: #22c55e; color: black; }
-.medium { background-color: #facc15; color: black; }
-.high { background-color: #ef4444; }
-.share-section {
-    margin-top: 20px;
+    padding: 14px;
+    margin-top: 6px;
+    background: var(--green);
+    border: none;
+    border-radius: var(--radius);
+    color: #000;
+    font-weight: 700;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.1s;
+  }
+  #submitBtn:hover { opacity: 0.9; transform: translateY(-1px); }
+  #submitBtn:active { transform: translateY(0); }
+  #submitBtn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+  /* Result */
+  #result {
     display: none;
-}
-.share-section button {
-    background-color: #38bdf8;
-    color: black;
-}
-.footer {
+    margin-top: 28px;
+    padding: 20px;
+    border-radius: var(--radius);
+    text-align: center;
+  }
+  #result .score { font-size: 2.5rem; font-weight: 700; margin-bottom: 4px; }
+  #result .verdict { font-size: 1.2rem; font-weight: 600; margin-bottom: 8px; }
+  #result .message { font-size: 0.9rem; opacity: 0.85; }
+  #result.low  { background: #14532d; border: 1px solid var(--green); }
+  #result.medium { background: #713f12; border: 1px solid var(--yellow); color: #fff; }
+  #result.high { background: #7f1d1d; border: 1px solid var(--red); }
+
+  /* Tips */
+  #tips {
+    display: none;
+    margin-top: 16px;
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: 16px 18px;
+    font-size: 0.9rem;
+  }
+  #tips h3 { margin-bottom: 10px; color: var(--yellow); }
+  #tips li { margin-bottom: 8px; margin-left: 18px; color: var(--muted); }
+  #tips li span { color: var(--text); }
+
+  /* Share */
+  #shareSection {
+    display: none;
+    margin-top: 20px;
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: 16px 18px;
+    text-align: center;
+  }
+  #shareSection h3 { margin-bottom: 6px; }
+  #shareSection p { color: var(--muted); font-size: 0.88rem; margin-bottom: 14px; }
+  .share-buttons { display: flex; gap: 10px; flex-wrap: wrap; }
+  .share-buttons button {
+    flex: 1;
+    min-width: 120px;
+    padding: 10px;
+    border: none;
+    border-radius: 6px;
+    background: var(--blue);
+    color: #000;
+    font-weight: 600;
+    font-size: 0.88rem;
+    cursor: pointer;
+    transition: opacity 0.2s;
+  }
+  .share-buttons button:hover { opacity: 0.85; }
+
+  .footer {
     margin-top: 40px;
     text-align: center;
-    font-size: 14px;
-    opacity: 0.7;
-}
+    font-size: 0.8rem;
+    color: var(--muted);
+  }
 </style>
 </head>
-
 <body>
 
 <h1>🔐 Cyber Hygiene Self-Assessment</h1>
-<p>Answer honestly. This takes less than 2 minutes.</p>
+<p class="subtitle">Answer honestly — takes under 2 minutes.</p>
 
-<form id="quiz">
+<div class="progress-wrap"><div class="progress-bar" id="progressBar"></div></div>
+<div class="progress-label" id="progressLabel">0 / 10 answered</div>
 
-<div class="question">
-1️⃣ Do you use a different password for your email than for other accounts?<br>
-<label><input type="radio" name="q1" value="1"> Yes</label>
-<label><input type="radio" name="q1" value="0"> No</label>
+<div id="quizContainer"></div>
+
+<button id="submitBtn" disabled>See My Results</button>
+
+<div id="result">
+  <div class="score" id="scoreDisplay"></div>
+  <div class="verdict" id="verdictDisplay"></div>
+  <div class="message" id="messageDisplay"></div>
 </div>
 
-<div class="question">
-2️⃣ Are your passwords at least 12 characters long?<br>
-<label><input type="radio" name="q2" value="1"> Yes</label>
-<label><input type="radio" name="q2" value="0"> No</label>
+<div id="tips"><h3>💡 Areas to Improve</h3><ul id="tipsList"></ul></div>
+
+<div id="shareSection">
+  <h3>📣 Share Your Results!</h3>
+  <p>Tag <strong>@martellcybertech</strong> when you post.</p>
+  <div class="share-buttons">
+    <button id="twitterBtn">Share on X</button>
+    <button id="facebookBtn">Share on Facebook</button>
+    <button id="copyBtn">Copy for Instagram</button>
+  </div>
 </div>
 
-<div class="question">
-3️⃣ Do you use multi-factor authentication (MFA) on important accounts?<br>
-<label><input type="radio" name="q3" value="1"> Yes</label>
-<label><input type="radio" name="q3" value="0"> No</label>
-</div>
-
-<div class="question">
-4️⃣ Do you use a password manager?<br>
-<label><input type="radio" name="q4" value="1"> Yes</label>
-<label><input type="radio" name="q4" value="0"> No</label>
-</div>
-
-<div class="question">
-5️⃣ Do you install updates when available?<br>
-<label><input type="radio" name="q5" value="1"> Yes</label>
-<label><input type="radio" name="q5" value="0"> No</label>
-</div>
-
-<div class="question">
-6️⃣ Do you verify unexpected emails or texts before clicking links?<br>
-<label><input type="radio" name="q6" value="1"> Yes</label>
-<label><input type="radio" name="q6" value="0"> No</label>
-</div>
-
-<div class="question">
-7️⃣ Do you avoid public Wi-Fi for sensitive logins (or use a VPN)?<br>
-<label><input type="radio" name="q7" value="1"> Yes</label>
-<label><input type="radio" name="q7" value="0"> No</label>
-</div>
-
-<div class="question">
-8️⃣ Do you lock your devices with PIN, fingerprint, or face ID?<br>
-<label><input type="radio" name="q8" value="1"> Yes</label>
-<label><input type="radio" name="q8" value="0"> No</label>
-</div>
-
-<div class="question">
-9️⃣ Do you back up important files?<br>
-<label><input type="radio" name="q9" value="1"> Yes</label>
-<label><input type="radio" name="q9" value="0"> No</label>
-</div>
-
-<div class="question">
-🔟 If you clicked a suspicious link, would you know what to do next?<br>
-<label><input type="radio" name="q10" value="1"> Yes</label>
-<label><input type="radio" name="q10" value="0"> No</label>
-</div>
-
-<button type="button" onclick="calculateScore()">See My Results</button>
-
-</form>
-
-<div id="result"></div>
-
-<div class="share-section" id="shareSection">
-    <h3>📣 Share Your Results!</h3>
-    <p>Tag <strong>@martellcybertech</strong> when you post.</p>
-    <button onclick="shareTwitter()">Share on X (Twitter)</button>
-    <button onclick="shareFacebook()">Share on Facebook</button>
-    <button onclick="copyText()">Copy Text for Instagram</button>
-</div>
-
-<div class="footer">
-MartellCyberTech | Digital Bodyguard Protection
-</div>
+<div class="footer">MartellCyberTech | Digital Bodyguard Protection</div>
 
 <script>
+const QUESTIONS = [
+  { text: "Do you use a different password for your email than for other accounts?",  tip: "Use a unique password for every account, especially email." },
+  { text: "Are your passwords at least 12 characters long?",                          tip: "Longer passwords are exponentially harder to crack. Aim for 16+." },
+  { text: "Do you use multi-factor authentication (MFA) on important accounts?",      tip: "Enable MFA on email, banking, and social accounts immediately." },
+  { text: "Do you use a password manager?",                                           tip: "A password manager (Bitwarden, 1Password) removes the need to memorize passwords." },
+  { text: "Do you install updates when available?",                                   tip: "Most breaches exploit unpatched software. Enable auto-updates." },
+  { text: "Do you verify unexpected emails or texts before clicking links?",          tip: "Hover over links and verify the sender domain before clicking anything." },
+  { text: "Do you avoid public Wi-Fi for sensitive logins (or use a VPN)?",           tip: "Public Wi-Fi is unencrypted. Use a VPN or mobile hotspot for banking/email." },
+  { text: "Do you lock your devices with PIN, fingerprint, or face ID?",              tip: "Device lock is your last line of defense if your phone or laptop is stolen." },
+  { text: "Do you back up important files?",                                          tip: "Follow the 3-2-1 rule: 3 copies, 2 different media, 1 offsite/cloud." },
+  { text: "If you clicked a suspicious link, would you know what to do next?",        tip: "Know to: disconnect from network, run a virus scan, change passwords, alert IT." },
+];
+
+const EMOJIS = ["1️⃣","2️⃣","3️⃣","4️⃣","5️⃣","6️⃣","7️⃣","8️⃣","9️⃣","🔟"];
+
+// Build questions
+const container = document.getElementById("quizContainer");
+QUESTIONS.forEach((q, i) => {
+  const div = document.createElement("div");
+  div.className = "question";
+  div.id = `q-wrap-${i}`;
+  div.innerHTML = `
+    <div class="question-text">${EMOJIS[i]} ${q.text}</div>
+    <div class="options">
+      <label class="option-label"><input type="radio" name="q${i}" value="1"> ✅ Yes</label>
+      <label class="option-label"><input type="radio" name="q${i}" value="0"> ❌ No</label>
+    </div>`;
+  container.appendChild(div);
+});
+
+// Progress tracking
+let answered = new Array(QUESTIONS.length).fill(false);
+
+document.querySelectorAll('input[type="radio"]').forEach(input => {
+  input.addEventListener("change", () => {
+    const idx = parseInt(input.name.replace("q", ""));
+    answered[idx] = true;
+    document.getElementById(`q-wrap-${idx}`).classList.add("answered");
+
+    const count = answered.filter(Boolean).length;
+    const pct = (count / QUESTIONS.length) * 100;
+    document.getElementById("progressBar").style.width = pct + "%";
+    document.getElementById("progressLabel").textContent = `${count} / ${QUESTIONS.length} answered`;
+    document.getElementById("submitBtn").disabled = count < QUESTIONS.length;
+  });
+});
+
+// Results
 let finalMessage = "";
 
-function calculateScore() {
-    let score = 0;
-    for (let i = 1; i <= 10; i++) {
-        let answer = document.querySelector('input[name="q' + i + '"]:checked');
-        if (!answer) {
-            alert("Please answer all questions.");
-            return;
-        }
-        score += parseInt(answer.value);
-    }
+document.getElementById("submitBtn").addEventListener("click", () => {
+  let score = 0;
+  const failedTips = [];
 
-    let resultDiv = document.getElementById("result");
-    let shareSection = document.getElementById("shareSection");
+  QUESTIONS.forEach((q, i) => {
+    const val = parseInt(document.querySelector(`input[name="q${i}"]:checked`).value);
+    score += val;
+    if (val === 0) failedTips.push(q.tip);
+  });
 
-    resultDiv.className = "result";
-    shareSection.style.display = "block";
+  // Result display
+  const result = document.getElementById("result");
+  result.style.display = "block";
+  document.getElementById("scoreDisplay").textContent = `${score} / 10`;
 
-    if (score >= 8) {
-        resultDiv.classList.add("low");
-        finalMessage = "🟢 I scored LOW RISK on the Cyber Hygiene Check!";
-        resultDiv.innerHTML = finalMessage + "<br>Excellent cyber habits! 🔐";
-    } else if (score >= 5) {
-        resultDiv.classList.add("medium");
-        finalMessage = "🟡 I scored MODERATE RISK on the Cyber Hygiene Check!";
-        resultDiv.innerHTML = finalMessage + "<br>Some improvements are needed.";
-    } else {
-        resultDiv.classList.add("high");
-        finalMessage = "🔴 I scored HIGH RISK on the Cyber Hygiene Check!";
-        resultDiv.innerHTML = finalMessage + "<br>Time to strengthen your security habits.";
-    }
-}
+  if (score >= 8) {
+    result.className = "low";
+    finalMessage = "🟢 I scored LOW RISK on the MartellCyberTech Cyber Hygiene Check!";
+    document.getElementById("verdictDisplay").textContent = "🟢 Low Risk";
+    document.getElementById("messageDisplay").textContent = "Excellent cyber habits! Keep it up.";
+  } else if (score >= 5) {
+    result.className = "medium";
+    finalMessage = "🟡 I scored MODERATE RISK on the MartellCyberTech Cyber Hygiene Check!";
+    document.getElementById("verdictDisplay").textContent = "🟡 Moderate Risk";
+    document.getElementById("messageDisplay").textContent = "Some improvements needed — see tips below.";
+  } else {
+    result.className = "high";
+    finalMessage = "🔴 I scored HIGH RISK on the MartellCyberTech Cyber Hygiene Check!";
+    document.getElementById("verdictDisplay").textContent = "🔴 High Risk";
+    document.getElementById("messageDisplay").textContent = "Time to strengthen your security habits — start with the tips below.";
+  }
 
-function shareTwitter() {
-    const text = encodeURIComponent(finalMessage + " Take yours here: " + window.location.href + " @martellcybertech");
-    window.open("https://twitter.com/intent/tweet?text=" + text, "_blank");
-}
+  // Tips for failed questions
+  const tipsList = document.getElementById("tipsList");
+  tipsList.innerHTML = "";
+  if (failedTips.length > 0) {
+    failedTips.forEach(tip => {
+      const li = document.createElement("li");
+      li.innerHTML = `<span>${tip}</span>`;
+      tipsList.appendChild(li);
+    });
+    document.getElementById("tips").style.display = "block";
+  }
 
-function shareFacebook() {
-    const url = encodeURIComponent(window.location.href);
-    window.open("https://www.facebook.com/sharer/sharer.php?u=" + url, "_blank");
-}
+  document.getElementById("shareSection").style.display = "block";
+  result.scrollIntoView({ behavior: "smooth", block: "start" });
+});
 
-function copyText() {
-    const text = finalMessage + " I took the Cyber Hygiene Check! Take yours here: " + window.location.href + " Tag @martellcybertech";
-    navigator.clipboard.writeText(text);
-    alert("Copied! Paste into Instagram and tag @martellcybertech.");
-}
+// Share buttons
+document.getElementById("twitterBtn").addEventListener("click", () => {
+  const text = encodeURIComponent(finalMessage + " Take yours: " + window.location.href + " @martellcybertech");
+  window.open("https://twitter.com/intent/tweet?text=" + text, "_blank");
+});
+
+document.getElementById("facebookBtn").addEventListener("click", () => {
+  const url = encodeURIComponent(window.location.href);
+  window.open("https://www.facebook.com/sharer/sharer.php?u=" + url, "_blank");
+});
+
+document.getElementById("copyBtn").addEventListener("click", () => {
+  const text = finalMessage + " Take yours: " + window.location.href + " Tag @martellcybertech";
+  navigator.clipboard.writeText(text).then(() => alert("Copied! Paste into Instagram and tag @martellcybertech."));
+});
 </script>
 
 </body>
