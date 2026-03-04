@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard | MartellCyberTech</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg:       #080e1a;
+    --panel:    #0d1526;
+    --border:   #1a2740;
+    --green:    #00ff88;
+    --yellow:   #fbbf24;
+    --red:      #ff4455;
+    --blue:     #38bdf8;
+    --text:     #e2e8f0;
+    --muted:    #4a6080;
+    --mono:     'Share Tech Mono', monospace;
+    --sans:     'DM Sans', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Scanline overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,0,0,0.08) 2px,
+      rgba(0,0,0,0.08) 4px
+    );
+    pointer-events: none;
+    z-index: 999;
+  }
+
+  /* Header */
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 32px;
+    border-bottom: 1px solid var(--border);
+    background: var(--panel);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .logo {
+    font-family: var(--mono);
+    font-size: 1rem;
+    color: var(--green);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .logo span { color: var(--muted); }
+
+  .live-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+  .live-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 0 8px var(--green);
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  #refreshBtn {
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    padding: 6px 14px;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    color: var(--muted);
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    transition: all 0.2s;
+  }
+  #refreshBtn:hover { border-color: var(--green); color: var(--green); }
+
+  /* Main layout */
+  main {
+    padding: 32px;
+    max-width: 1200px;
+    margin: auto;
+  }
+
+  .page-title {
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    margin-bottom: 6px;
+  }
+  h1 {
+    font-size: clamp(1.4rem, 3vw, 2rem);
+    font-weight: 600;
+    margin-bottom: 32px;
+    color: var(--text);
+  }
+  h1 span { color: var(--green); }
+
+  /* Loading state */
+  #loadingState {
+    text-align: center;
+    padding: 80px 20px;
+    font-family: var(--mono);
+    color: var(--muted);
+    font-size: 0.85rem;
+    letter-spacing: 0.1em;
+  }
+  .spinner {
+    width: 32px; height: 32px;
+    border: 2px solid var(--border);
+    border-top-color: var(--green);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 16px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Error state */
+  #errorState {
+    display: none;
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--red);
+    font-family: var(--mono);
+    font-size: 0.85rem;
+  }
+
+  /* Dashboard content */
+  #dashContent { display: none; }
+
+  /* Stat cards */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+
+  .stat-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px 24px;
+    position: relative;
+    overflow: hidden;
+    animation: fadeUp 0.4s ease both;
+  }
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+  }
+  .stat-card.total::before  { background: var(--blue); }
+  .stat-card.low::before    { background: var(--green); }
+  .stat-card.medium::before { background: var(--yellow); }
+  .stat-card.high::before   { background: var(--red); }
+
+  .stat-label {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    margin-bottom: 8px;
+  }
+  .stat-value {
+    font-family: var(--mono);
+    font-size: 2.2rem;
+    font-weight: 400;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .stat-card.total  .stat-value { color: var(--blue); }
+  .stat-card.low    .stat-value { color: var(--green); }
+  .stat-card.medium .stat-value { color: var(--yellow); }
+  .stat-card.high   .stat-value { color: var(--red); }
+
+  .stat-sub {
+    font-size: 0.75rem;
+    color: var(--muted);
+  }
+
+  /* Charts row */
+  .charts-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+  @media (max-width: 680px) { .charts-grid { grid-template-columns: 1fr; } }
+
+  .chart-panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px 24px;
+    animation: fadeUp 0.5s ease both;
+  }
+  .chart-title {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    margin-bottom: 16px;
+  }
+  .chart-wrap { position: relative; height: 220px; }
+
+  /* Failed questions bar */
+  .full-panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px 24px;
+    margin-bottom: 28px;
+    animation: fadeUp 0.6s ease both;
+  }
+  .full-panel .chart-title { margin-bottom: 20px; }
+  .bar-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+    font-size: 0.82rem;
+  }
+  .bar-label {
+    flex: 0 0 260px;
+    color: var(--text);
+    font-size: 0.78rem;
+    line-height: 1.3;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  @media (max-width: 600px) { .bar-label { flex: 0 0 140px; } }
+  .bar-track {
+    flex: 1;
+    background: var(--border);
+    border-radius: 99px;
+    height: 8px;
+    overflow: hidden;
+  }
+  .bar-fill {
+    height: 100%;
+    border-radius: 99px;
+    background: var(--red);
+    width: 0%;
+    transition: width 0.8s cubic-bezier(0.16,1,0.3,1);
+  }
+  .bar-count {
+    flex: 0 0 36px;
+    text-align: right;
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    color: var(--muted);
+  }
+
+  /* Recent table */
+  .table-wrap { overflow-x: auto; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.83rem;
+  }
+  thead tr {
+    border-bottom: 1px solid var(--border);
+  }
+  th {
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding: 8px 12px;
+    text-align: left;
+    font-weight: 400;
+  }
+  td {
+    padding: 10px 12px;
+    border-bottom: 1px solid rgba(26,39,64,0.6);
+    color: var(--text);
+    vertical-align: middle;
+  }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover td { background: rgba(255,255,255,0.02); }
+
+  .badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 99px;
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    font-weight: 400;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .badge.low    { background: rgba(0,255,136,0.1);  color: var(--green);  border: 1px solid rgba(0,255,136,0.2); }
+  .badge.medium { background: rgba(251,191,36,0.1); color: var(--yellow); border: 1px solid rgba(251,191,36,0.2); }
+  .badge.high   { background: rgba(255,68,85,0.1);  color: var(--red);    border: 1px solid rgba(255,68,85,0.2); }
+
+  .score-num {
+    font-family: var(--mono);
+    font-size: 0.9rem;
+  }
+
+  /* Footer */
+  footer {
+    text-align: center;
+    padding: 32px;
+    font-size: 0.75rem;
+    color: var(--muted);
+    font-family: var(--mono);
+    border-top: 1px solid var(--border);
+    letter-spacing: 0.08em;
+  }
+  footer a {
+    color: var(--green);
+    text-decoration: none;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Martell<span>Cyber</span>Tech</div>
+  <div class="header-right">
+    <div class="live-badge"><div class="live-dot"></div> Live Data</div>
+    <button id="refreshBtn" onclick="loadData()">↻ Refresh</button>
+  </div>
+</header>
+
+<main>
+  <div class="page-title">Analytics Dashboard</div>
+  <h1>Cyber Hygiene <span>Results</span></h1>
+
+  <!-- Loading -->
+  <div id="loadingState">
+    <div class="spinner"></div>
+    Fetching data from Supabase...
+  </div>
+
+  <!-- Error -->
+  <div id="errorState">
+    <div style="font-size:2rem;margin-bottom:12px">⚠</div>
+    <div id="errorMsg">Failed to load data.</div>
+    <div style="margin-top:8px;color:#4a6080">Check your credentials and try refreshing.</div>
+  </div>
+
+  <!-- Dashboard -->
+  <div id="dashContent">
+
+    <!-- Stat Cards -->
+    <div class="stats-grid">
+      <div class="stat-card total">
+        <div class="stat-label">Total Submissions</div>
+        <div class="stat-value" id="statTotal">—</div>
+        <div class="stat-sub">All time</div>
+      </div>
+      <div class="stat-card low">
+        <div class="stat-label">Low Risk</div>
+        <div class="stat-value" id="statLow">—</div>
+        <div class="stat-sub" id="statLowPct">Score 8–10</div>
+      </div>
+      <div class="stat-card medium">
+        <div class="stat-label">Moderate Risk</div>
+        <div class="stat-value" id="statMedium">—</div>
+        <div class="stat-sub" id="statMediumPct">Score 5–7</div>
+      </div>
+      <div class="stat-card high">
+        <div class="stat-label">High Risk</div>
+        <div class="stat-value" id="statHigh">—</div>
+        <div class="stat-sub" id="statHighPct">Score 0–4</div>
+      </div>
+    </div>
+
+    <!-- Charts -->
+    <div class="charts-grid">
+      <div class="chart-panel">
+        <div class="chart-title">Risk Level Breakdown</div>
+        <div class="chart-wrap">
+          <canvas id="riskChart"></canvas>
+        </div>
+      </div>
+      <div class="chart-panel">
+        <div class="chart-title">Score Distribution</div>
+        <div class="chart-wrap">
+          <canvas id="scoreChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Most Failed Questions -->
+    <div class="full-panel">
+      <div class="chart-title">Most Commonly Failed Questions</div>
+      <div id="failedBars"></div>
+    </div>
+
+    <!-- Recent Submissions -->
+    <div class="full-panel">
+      <div class="chart-title">Recent Submissions</div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Score</th>
+              <th>Risk Level</th>
+              <th>Failed Questions</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+          <tbody id="recentTable"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div><!-- /dashContent -->
+</main>
+
+<footer>
+  MartellCyberTech &nbsp;|&nbsp; Digital Bodyguard Protection &nbsp;|&nbsp;
+  <a href="index.html">← Back to Quiz</a>
+</footer>
+
+<script>
+// ── Supabase config ──────────────────────────────────────────
+const SUPABASE_URL     = "https://ivaualmfkzjglhjkllda.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml2YXVhbG1ma3pqZ2xoamtsbGRhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI1ODMzMjEsImV4cCI6MjA4ODE1OTMyMX0.3qFMUSyOu1nIKuji59C5lCj4JGyPOas6YDgyc3KSJUI";
+// ─────────────────────────────────────────────────────────────
+
+// Short tip labels for the bar chart (matches quiz order)
+const QUESTION_LABELS = [
+  "Unique email password",
+  "Passwords 12+ chars",
+  "Uses MFA",
+  "Uses password manager",
+  "Installs updates",
+  "Verifies suspicious links",
+  "Avoids public Wi-Fi / uses VPN",
+  "Locks devices",
+  "Backs up files",
+  "Knows post-breach steps"
+];
+
+let riskChartInst  = null;
+let scoreChartInst = null;
+
+async function loadData() {
+  document.getElementById("loadingState").style.display = "block";
+  document.getElementById("dashContent").style.display  = "none";
+  document.getElementById("errorState").style.display   = "none";
+
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/results?select=*&order=created_at.desc&limit=200`, {
+      headers: {
+        "apikey": SUPABASE_ANON_KEY,
+        "Authorization": `Bearer ${SUPABASE_ANON_KEY}`
+      }
+    });
+
+    if (!res.ok) throw new Error(await res.text());
+    const rows = await res.json();
+
+    document.getElementById("loadingState").style.display = "none";
+    document.getElementById("dashContent").style.display  = "block";
+
+    renderDashboard(rows);
+
+  } catch (err) {
+    document.getElementById("loadingState").style.display = "none";
+    document.getElementById("errorState").style.display   = "block";
+    document.getElementById("errorMsg").textContent = "Error: " + err.message;
+  }
+}
+
+function renderDashboard(rows) {
+  const total  = rows.length;
+  const counts = { low: 0, medium: 0, high: 0 };
+  const scoreDist = Array(11).fill(0);
+  const failMap = {};
+
+  rows.forEach(r => {
+    if (counts[r.risk_level] !== undefined) counts[r.risk_level]++;
+    if (r.score >= 0 && r.score <= 10) scoreDist[r.score]++;
+
+    // Count failed questions
+    if (Array.isArray(r.failed_questions)) {
+      r.failed_questions.forEach(tip => {
+        // Match tip text back to a short label
+        const idx = getTipIndex(tip);
+        const label = idx >= 0 ? QUESTION_LABELS[idx] : tip.slice(0, 40);
+        failMap[label] = (failMap[label] || 0) + 1;
+      });
+    }
+  });
+
+  const pct = n => total > 0 ? Math.round((n / total) * 100) + "%" : "0%";
+
+  // Stat cards
+  document.getElementById("statTotal").textContent         = total;
+  document.getElementById("statLow").textContent           = counts.low;
+  document.getElementById("statMedium").textContent        = counts.medium;
+  document.getElementById("statHigh").textContent          = counts.high;
+  document.getElementById("statLowPct").textContent        = pct(counts.low) + " of submissions";
+  document.getElementById("statMediumPct").textContent     = pct(counts.medium) + " of submissions";
+  document.getElementById("statHighPct").textContent       = pct(counts.high) + " of submissions";
+
+  // Risk doughnut chart
+  if (riskChartInst) riskChartInst.destroy();
+  riskChartInst = new Chart(document.getElementById("riskChart"), {
+    type: "doughnut",
+    data: {
+      labels: ["Low Risk", "Moderate Risk", "High Risk"],
+      datasets: [{
+        data: [counts.low, counts.medium, counts.high],
+        backgroundColor: ["#00ff8833", "#fbbf2433", "#ff445533"],
+        borderColor:     ["#00ff88",   "#fbbf24",   "#ff4455"],
+        borderWidth: 2,
+        hoverOffset: 6
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      cutout: "70%",
+      plugins: {
+        legend: {
+          position: "bottom",
+          labels: { color: "#94a3b8", font: { family: "Share Tech Mono", size: 11 }, padding: 14 }
+        }
+      }
+    }
+  });
+
+  // Score distribution bar chart
+  if (scoreChartInst) scoreChartInst.destroy();
+  scoreChartInst = new Chart(document.getElementById("scoreChart"), {
+    type: "bar",
+    data: {
+      labels: ["0","1","2","3","4","5","6","7","8","9","10"],
+      datasets: [{
+        label: "Submissions",
+        data: scoreDist,
+        backgroundColor: scoreDist.map((_, i) =>
+          i >= 8 ? "#00ff8844" : i >= 5 ? "#fbbf2444" : "#ff445544"),
+        borderColor: scoreDist.map((_, i) =>
+          i >= 8 ? "#00ff88" : i >= 5 ? "#fbbf24" : "#ff4455"),
+        borderWidth: 1,
+        borderRadius: 4
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { ticks: { color: "#4a6080", font: { family: "Share Tech Mono", size: 10 } }, grid: { color: "#1a2740" } },
+        y: { ticks: { color: "#4a6080", font: { family: "Share Tech Mono", size: 10 }, stepSize: 1 }, grid: { color: "#1a2740" } }
+      }
+    }
+  });
+
+  // Failed questions bars
+  const sorted = Object.entries(failMap).sort((a, b) => b[1] - a[1]);
+  const maxFail = sorted.length > 0 ? sorted[0][1] : 1;
+  const barsEl = document.getElementById("failedBars");
+  barsEl.innerHTML = "";
+
+  if (sorted.length === 0) {
+    barsEl.innerHTML = `<div style="color:var(--muted);font-size:0.8rem;font-family:var(--mono)">No failure data yet.</div>`;
+  } else {
+    sorted.forEach(([label, count]) => {
+      const pctW = Math.round((count / maxFail) * 100);
+      const row = document.createElement("div");
+      row.className = "bar-row";
+      row.innerHTML = `
+        <div class="bar-label" title="${label}">${label}</div>
+        <div class="bar-track"><div class="bar-fill" data-w="${pctW}"></div></div>
+        <div class="bar-count">${count}</div>`;
+      barsEl.appendChild(row);
+    });
+    // Animate bars after render
+    requestAnimationFrame(() => {
+      document.querySelectorAll(".bar-fill").forEach(el => {
+        el.style.width = el.dataset.w + "%";
+      });
+    });
+  }
+
+  // Recent submissions table
+  const tbody = document.getElementById("recentTable");
+  tbody.innerHTML = "";
+  const recent = rows.slice(0, 20);
+
+  if (recent.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="5" style="color:var(--muted);text-align:center;padding:24px;font-family:var(--mono);font-size:0.8rem">No submissions yet.</td></tr>`;
+  } else {
+    recent.forEach((r, i) => {
+      const date = new Date(r.created_at).toLocaleDateString("en-US", {
+        month: "short", day: "numeric", year: "numeric", hour: "2-digit", minute: "2-digit"
+      });
+      const failCount = Array.isArray(r.failed_questions) ? r.failed_questions.length : "—";
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td style="color:var(--muted);font-family:var(--mono);font-size:0.75rem">${i + 1}</td>
+        <td><span class="score-num">${r.score ?? "—"}<span style="color:var(--muted);font-size:0.7rem">/10</span></span></td>
+        <td><span class="badge ${r.risk_level}">${r.risk_level ?? "—"}</span></td>
+        <td style="color:var(--muted)">${failCount} question${failCount !== 1 ? "s" : ""} failed</td>
+        <td style="color:var(--muted);font-size:0.75rem;font-family:var(--mono)">${date}</td>`;
+      tbody.appendChild(tr);
+    });
+  }
+}
+
+// Match a tip string back to its index in QUESTION_LABELS
+const TIP_KEYWORDS = [
+  "unique password",    // 0
+  "longer passwords",   // 1
+  "mfa",                // 2
+  "password manager",   // 3
+  "unpatched",          // 4
+  "hover over",         // 5
+  "vpn",                // 6
+  "device lock",        // 7
+  "3-2-1",              // 8
+  "disconnect"          // 9
+];
+
+function getTipIndex(tip) {
+  const lower = tip.toLowerCase();
+  return TIP_KEYWORDS.findIndex(kw => lower.includes(kw));
+}
+
+// Load on page open
+loadData();
+</script>
+</body>
+</html>
