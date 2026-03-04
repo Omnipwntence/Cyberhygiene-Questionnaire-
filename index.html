@@ -230,6 +230,33 @@
 <div class="footer">MartellCyberTech | Digital Bodyguard Protection</div>
 
 <script>
+// ── Supabase config ──────────────────────────────────────────
+const SUPABASE_URL = "https://ivaualmfkzjglhjkllda.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_ezAHKwkcfgfTyrznAoh-JQ_Mt2fC-Bb";
+
+async function saveResult(score, riskLevel, failedQuestions) {
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/results`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "apikey": SUPABASE_ANON_KEY,
+        "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
+        "Prefer": "return=minimal"
+      },
+      body: JSON.stringify({
+        score,
+        risk_level: riskLevel,
+        failed_questions: failedQuestions
+      })
+    });
+    if (!res.ok) console.error("Supabase error:", await res.text());
+  } catch (err) {
+    console.error("Failed to save result:", err);
+  }
+}
+// ─────────────────────────────────────────────────────────────
+
 const QUESTIONS = [
   { text: "Do you use a different password for your email than for other accounts?",  tip: "Use a unique password for every account, especially email." },
   { text: "Are your passwords at least 12 characters long?",                          tip: "Longer passwords are exponentially harder to crack. Aim for 16+." },
@@ -311,6 +338,9 @@ document.getElementById("submitBtn").addEventListener("click", () => {
     document.getElementById("verdictDisplay").textContent = "🔴 High Risk";
     document.getElementById("messageDisplay").textContent = "Time to strengthen your security habits — start with the tips below.";
   }
+
+  // Save to Supabase
+  saveResult(score, result.className, failedTips);
 
   // Tips for failed questions
   const tipsList = document.getElementById("tipsList");
