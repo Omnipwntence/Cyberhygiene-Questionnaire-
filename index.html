@@ -207,6 +207,9 @@
 
 <div id="quizContainer"></div>
 
+<!-- Honeypot anti-bot field — hidden from real users, bots will fill it -->
+<input type="text" name="company" id="honeypot" style="display:none" tabindex="-1" autocomplete="off">
+
 <button id="submitBtn" disabled>See My Results</button>
 
 <div id="result">
@@ -308,6 +311,15 @@ document.querySelectorAll('input[type="radio"]').forEach(input => {
 let finalMessage = "";
 
 document.getElementById("submitBtn").addEventListener("click", () => {
+
+  // ── Anti-bot honeypot check ──────────────────────────────
+  // Real users never see or fill this field — bots do
+  if (document.getElementById("honeypot").value !== "") {
+    console.warn("Bot detected — submission blocked.");
+    return;
+  }
+  // ─────────────────────────────────────────────────────────
+
   let score = 0;
   const failedTips = [];
 
