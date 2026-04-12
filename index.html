@@ -3,7 +3,16 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Cyber Hygiene Check | MartellCyberTech</title>
+<title>Cyber Hygiene Check | Martell Cyber Tech</title>
+
+<!-- SEO / Open Graph -->
+<meta name="description" content="Take the free Martell Cyber Tech Cyber Hygiene Self-Assessment — find out your risk level in under 2 minutes." />
+<meta property="og:title" content="Cyber Hygiene Check | Martell Cyber Tech" />
+<meta property="og:description" content="How secure are you really? Take the free 10-question self-assessment from Martell Cyber Tech." />
+<meta property="og:url" content="https://check.martellcybertech.com/" />
+<meta property="og:type" content="website" />
+<link rel="canonical" href="https://check.martellcybertech.com/" />
+
 <style>
   :root {
     --bg: #0f172a;
@@ -17,6 +26,7 @@
     --muted: #94a3b8;
     --radius: 10px;
     --font: 'Segoe UI', system-ui, sans-serif;
+    --nav-height: 58px;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -25,26 +35,243 @@
     font-family: var(--font);
     background-color: var(--bg);
     color: var(--text);
-    padding: 24px 20px;
+    padding: calc(var(--nav-height) + 24px) 20px 24px; /* top offset for sticky nav */
     max-width: 720px;
     margin: auto;
     line-height: 1.6;
   }
 
+  /* ════════════════════════════════════════
+     STICKY NAVBAR
+     Copy this block to every MCT resource page for consistency.
+     ════════════════════════════════════════ */
+  .site-nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    height: var(--nav-height);
+    background: #07101f;           /* darker than page bg for clear separation */
+    border-bottom: 1px solid #1e293b;
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+  }
+  .nav-inner {
+    width: 100%;
+    max-width: 1100px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  /* Brand */
+  .nav-brand {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    color: var(--text);
+    font-size: 0.93rem;
+    font-weight: 700;
+    letter-spacing: -0.2px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .nav-brand .brand-shield { font-size: 1.15rem; }
+  .nav-brand span.accent { color: var(--blue); }
+
+  /* Breadcrumb */
+  .nav-page-label {
+    font-size: 0.78rem;
+    color: #475569;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .nav-page-label .sep { color: #334155; }
+  .nav-page-label .current { color: #94a3b8; font-weight: 500; }
+
+  /* Right group */
+  .nav-right {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+
+  /* Resources dropdown */
+  .nav-dropdown { position: relative; }
+  .nav-dropdown-trigger {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #94a3b8;
+    font-size: 0.83rem;
+    font-weight: 500;
+    padding: 5px 10px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    transition: background 0.15s, color 0.15s;
+    font-family: inherit;
+  }
+  .nav-dropdown-trigger:hover,
+  .nav-dropdown-trigger:focus { background: #1e293b; color: var(--text); outline: none; }
+  .chevron {
+    font-size: 0.6rem;
+    transition: transform 0.2s;
+    display: inline-block;
+  }
+  .nav-dropdown.open .chevron { transform: rotate(180deg); }
+
+  .nav-dropdown-menu {
+    display: none;
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 10px;
+    min-width: 225px;
+    padding: 6px;
+    box-shadow: 0 8px 28px rgba(0,0,0,0.5);
+  }
+  .nav-dropdown.open .nav-dropdown-menu { display: block; }
+
+  .nav-dropdown-menu a {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 12px;
+    border-radius: 7px;
+    text-decoration: none;
+    color: #cbd5e1;
+    font-size: 0.875rem;
+    transition: background 0.12s, color 0.12s;
+  }
+  .nav-dropdown-menu a:hover { background: #263548; color: var(--text); }
+  .nav-dropdown-menu a.active { background: rgba(56,189,248,0.12); color: var(--blue); }
+  .nav-dropdown-menu a.disabled { opacity: 0.4; pointer-events: none; cursor: default; }
+  .item-icon { width: 20px; text-align: center; }
+  .menu-divider { height: 1px; background: #334155; margin: 5px 0; }
+  .menu-label {
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: #475569;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    padding: 7px 12px 3px;
+  }
+
+  /* Main site CTA button */
+  .nav-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 13px;
+    border: 1.5px solid #334155;
+    border-radius: 20px;
+    color: #94a3b8;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: border-color 0.15s, color 0.15s, background 0.15s;
+  }
+  .nav-cta:hover { border-color: var(--blue); color: var(--blue); background: rgba(56,189,248,0.08); }
+
+  /* Hamburger */
+  .nav-hamburger {
+    display: none;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 6px;
+    flex-direction: column;
+    gap: 4px;
+    border-radius: 6px;
+    flex-shrink: 0;
+  }
+  .nav-hamburger span {
+    display: block;
+    width: 20px;
+    height: 2px;
+    background: #94a3b8;
+    border-radius: 2px;
+    transition: transform 0.2s, opacity 0.2s;
+  }
+  .nav-hamburger.open span:nth-child(1) { transform: translateY(6px) rotate(45deg); }
+  .nav-hamburger.open span:nth-child(2) { opacity: 0; }
+  .nav-hamburger.open span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
+
+  /* Mobile drawer */
+  .nav-mobile-menu {
+    display: none;
+    position: fixed;
+    top: var(--nav-height);
+    left: 0;
+    right: 0;
+    background: #07101f;
+    border-bottom: 1px solid #1e293b;
+    padding: 12px 20px 20px;
+    z-index: 999;
+  }
+  .nav-mobile-menu.open { display: block; }
+  .nav-mobile-menu .menu-label { padding-left: 0; }
+  .nav-mobile-menu a {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 4px;
+    border-bottom: 1px solid #1e293b;
+    text-decoration: none;
+    color: #cbd5e1;
+    font-size: 0.9rem;
+  }
+  .nav-mobile-menu a:last-of-type { border-bottom: none; }
+  .nav-mobile-menu a:hover { color: var(--text); }
+  .nav-mobile-menu a.active { color: var(--blue); }
+  .nav-mobile-cta {
+    display: block;
+    margin-top: 14px;
+    padding: 10px 14px;
+    border: 1.5px solid #334155;
+    border-radius: 10px;
+    color: var(--blue);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-align: center;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .nav-mobile-cta:hover { border-color: var(--blue); background: rgba(56,189,248,0.08); }
+
+  @media (max-width: 640px) {
+    .nav-right, .nav-page-label { display: none; }
+    .nav-hamburger { display: flex; }
+  }
+
+  /* Anchor offset for sticky nav */
+  [id] { scroll-margin-top: calc(var(--nav-height) + 10px); }
+
+  /* ── Page styles (original, unchanged) ── */
   h1 {
     text-align: center;
     font-size: clamp(1.4rem, 4vw, 2rem);
     margin-bottom: 6px;
   }
-
   .subtitle {
     text-align: center;
     color: var(--muted);
     margin-bottom: 24px;
     font-size: 0.95rem;
   }
-
-  /* Progress bar */
   .progress-wrap {
     background: var(--surface);
     border-radius: 99px;
@@ -65,8 +292,6 @@
     color: var(--muted);
     margin-bottom: 20px;
   }
-
-  /* Questions */
   .question {
     background: var(--surface);
     border-radius: var(--radius);
@@ -76,17 +301,11 @@
     transition: border-color 0.2s;
   }
   .question.answered { border-color: #334155; }
-
   .question-text {
     font-size: 0.97rem;
     margin-bottom: 12px;
   }
-
-  .options {
-    display: flex;
-    gap: 10px;
-  }
-
+  .options { display: flex; gap: 10px; }
   .option-label {
     flex: 1;
     display: flex;
@@ -114,8 +333,6 @@
     border-color: var(--red);
     color: var(--red);
   }
-
-  /* Submit button */
   #submitBtn {
     display: block;
     width: 100%;
@@ -133,8 +350,6 @@
   #submitBtn:hover { opacity: 0.9; transform: translateY(-1px); }
   #submitBtn:active { transform: translateY(0); }
   #submitBtn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
-
-  /* Result */
   #result {
     display: none;
     margin-top: 28px;
@@ -145,11 +360,9 @@
   #result .score { font-size: 2.5rem; font-weight: 700; margin-bottom: 4px; }
   #result .verdict { font-size: 1.2rem; font-weight: 600; margin-bottom: 8px; }
   #result .message { font-size: 0.9rem; opacity: 0.85; }
-  #result.low  { background: #14532d; border: 1px solid var(--green); }
+  #result.low    { background: #14532d; border: 1px solid var(--green); }
   #result.medium { background: #713f12; border: 1px solid var(--yellow); color: #fff; }
-  #result.high { background: #7f1d1d; border: 1px solid var(--red); }
-
-  /* Tips */
+  #result.high   { background: #7f1d1d; border: 1px solid var(--red); }
   #tips {
     display: none;
     margin-top: 16px;
@@ -161,8 +374,6 @@
   #tips h3 { margin-bottom: 10px; color: var(--yellow); }
   #tips li { margin-bottom: 8px; margin-left: 18px; color: var(--muted); }
   #tips li span { color: var(--text); }
-
-  /* Share */
   #shareSection {
     display: none;
     margin-top: 20px;
@@ -189,22 +400,139 @@
   }
   .share-buttons button:hover { opacity: 0.85; }
 
+  /* ── Footer ── */
   .footer {
     margin-top: 40px;
     text-align: center;
     font-size: 0.8rem;
     color: var(--muted);
   }
+  .footer-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 16px;
+    padding: 8px 18px;
+    border: 1.5px solid #334155;
+    border-radius: 20px;
+    color: var(--blue);
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 600;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .footer-back:hover { border-color: var(--blue); background: rgba(56,189,248,0.08); }
+  .footer-resources {
+    display: flex;
+    gap: 14px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+    font-size: 0.85rem;
+  }
+  .footer-resources a { color: var(--blue); text-decoration: none; }
+  .footer-resources a:hover { text-decoration: underline; }
+  .footer-resources span { color: #334155; }
 </style>
 </head>
 <body>
 
+<!-- ════════════════════════════════════════
+     STICKY NAVBAR
+     Copy this block to every MCT resource page for consistency.
+     ════════════════════════════════════════ -->
+<nav class="site-nav" aria-label="Site navigation">
+  <div class="nav-inner">
+
+    <!-- Brand: always links back to main site -->
+    <a href="https://www.martellcybertech.com" class="nav-brand" title="Back to Martell Cyber Tech">
+      <span class="brand-shield">🛡️</span>
+      Martell <span class="accent">Cyber</span>Tech
+    </a>
+
+    <!-- Breadcrumb (hidden on mobile) -->
+    <div class="nav-page-label" aria-hidden="true">
+      <span>Resources</span>
+      <span class="sep">›</span>
+      <span class="current">Cyber Hygiene Check</span>
+    </div>
+
+    <!-- Right side: Resources dropdown + CTA -->
+    <div class="nav-right">
+
+      <div class="nav-dropdown" id="resourcesDropdown">
+        <button
+          class="nav-dropdown-trigger"
+          aria-haspopup="true"
+          aria-expanded="false"
+          aria-controls="resourcesMenu"
+          onclick="toggleDropdown()"
+        >
+          Resources <span class="chevron">▾</span>
+        </button>
+        <div class="nav-dropdown-menu" id="resourcesMenu" role="menu">
+          <div class="menu-label">MCT Resource Pages</div>
+          <a href="https://check.martellcybertech.com" class="active" role="menuitem">
+            <span class="item-icon">✅</span> Cyber Hygiene Check
+          </a>
+          <a href="https://iphone.martellcybertech.com" target="_blank" rel="noopener noreferrer" role="menuitem">
+            <span class="item-icon">📱</span> iPhone Hardening Guide
+          </a>
+          <div class="menu-divider"></div>
+          <div class="menu-label">Coming Soon</div>
+          <a class="disabled" role="menuitem">
+            <span class="item-icon">💻</span> Windows Hardening Guide
+          </a>
+          <a class="disabled" role="menuitem">
+            <span class="item-icon">🤖</span> Android Hardening Guide
+          </a>
+        </div>
+      </div>
+
+      <a href="https://www.martellcybertech.com" class="nav-cta" title="Go to Martell Cyber Tech main site">
+        ← Main Site
+      </a>
+    </div>
+
+    <!-- Hamburger (mobile only) -->
+    <button
+      class="nav-hamburger"
+      id="hamburger"
+      aria-label="Toggle navigation menu"
+      aria-expanded="false"
+      onclick="toggleMobileMenu()"
+    >
+      <span></span><span></span><span></span>
+    </button>
+
+  </div>
+</nav>
+
+<!-- Mobile menu drawer -->
+<div class="nav-mobile-menu" id="mobileMenu" aria-hidden="true">
+  <div class="menu-label">Resources</div>
+  <a href="https://check.martellcybertech.com" class="active">
+    <span>✅</span> Cyber Hygiene Check
+  </a>
+  <a href="https://iphone.martellcybertech.com" target="_blank" rel="noopener noreferrer">
+    <span>📱</span> iPhone Hardening Guide
+  </a>
+  <a style="opacity:0.4; pointer-events:none;">
+    <span>💻</span> Windows Hardening Guide <em style="font-size:0.75rem;">(coming soon)</em>
+  </a>
+  <a style="opacity:0.4; pointer-events:none;">
+    <span>🤖</span> Android Hardening Guide <em style="font-size:0.75rem;">(coming soon)</em>
+  </a>
+  <a href="https://www.martellcybertech.com" class="nav-mobile-cta">
+    ← Back to Martell Cyber Tech
+  </a>
+</div>
+
+<!-- ── Page content (original, unchanged) ── -->
 <h1>🔐 Cyber Hygiene Self-Assessment</h1>
 <p class="subtitle">Answer honestly — takes under 2 minutes.</p>
-
 <div class="progress-wrap"><div class="progress-bar" id="progressBar"></div></div>
 <div class="progress-label" id="progressLabel">0 / 10 answered</div>
-
 <div id="quizContainer"></div>
 
 <!-- Honeypot anti-bot field — hidden from real users, bots will fill it -->
@@ -217,9 +545,7 @@
   <div class="verdict" id="verdictDisplay"></div>
   <div class="message" id="messageDisplay"></div>
 </div>
-
 <div id="tips"><h3>💡 Areas to Improve</h3><ul id="tipsList"></ul></div>
-
 <div id="shareSection">
   <h3>📣 Share Your Results!</h3>
   <p>Tag <strong>@martellcybertech</strong> when you post.</p>
@@ -230,17 +556,29 @@
   </div>
 </div>
 
+<!-- ── Footer ── -->
 <div class="footer">
-  MartellCyberTech | Digital Bodyguard Protection
-  <br><br>
+  <div>
+    <a href="https://www.martellcybertech.com" class="footer-back">← Back to Martell Cyber Tech</a>
+  </div>
+  <div class="footer-resources">
+    <a href="https://iphone.martellcybertech.com" target="_blank" rel="noopener noreferrer">📱 iPhone Hardening Guide</a>
+    <span>|</span>
+    <span style="color:#475569;">💻 Windows Guide (coming soon)</span>
+    <span>|</span>
+    <span style="color:#475569;">🤖 Android Guide (coming soon)</span>
+  </div>
+  <p>MartellCyberTech | Digital Bodyguard Protection</p>
+  <br>
   <a href="dashboard.html" style="color:#475569;font-size:0.75rem;text-decoration:none;letter-spacing:0.05em;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#475569'">📊 View Results Dashboard</a>
+  <br><br>
+  <p style="font-size:0.75rem; color:#334155;">&copy; 2026 Martell Cyber Tech. All rights reserved.</p>
 </div>
 
 <script>
 // ── Supabase config ──────────────────────────────────────────
 const SUPABASE_URL = "https://ivaualmfkzjglhjkllda.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml2YXVhbG1ma3pqZ2xoamtsbGRhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI1ODMzMjEsImV4cCI6MjA4ODE1OTMyMX0.3qFMUSyOu1nIKuji59C5lCj4JGyPOas6YDgyc3KSJUI";
-
 async function saveResult(score, riskLevel, failedQuestions) {
   try {
     const res = await fetch(`${SUPABASE_URL}/rest/v1/results`, {
@@ -251,19 +589,15 @@ async function saveResult(score, riskLevel, failedQuestions) {
         "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
         "Prefer": "return=minimal"
       },
-      body: JSON.stringify({
-        score,
-        risk_level: riskLevel,
-        failed_questions: failedQuestions
-      })
+      body: JSON.stringify({ score, risk_level: riskLevel, failed_questions: failedQuestions })
     });
     if (!res.ok) console.error("Supabase error:", await res.text());
   } catch (err) {
     console.error("Failed to save result:", err);
   }
 }
-// ─────────────────────────────────────────────────────────────
 
+// ── Quiz questions ───────────────────────────────────────────
 const QUESTIONS = [
   { text: "Do you use a different password for your email than for other accounts?",  tip: "Use a unique password for every account, especially email." },
   { text: "Are your passwords at least 12 characters long?",                          tip: "Longer passwords are exponentially harder to crack. Aim for 16+." },
@@ -276,7 +610,6 @@ const QUESTIONS = [
   { text: "Do you back up important files?",                                          tip: "Follow the 3-2-1 rule: 3 copies, 2 different media, 1 offsite/cloud." },
   { text: "If you clicked a suspicious link, would you know what to do next?",        tip: "Know to: disconnect from network, run a virus scan, change passwords, alert IT." },
 ];
-
 const EMOJIS = ["1️⃣","2️⃣","3️⃣","4️⃣","5️⃣","6️⃣","7️⃣","8️⃣","9️⃣","🔟"];
 
 // Build questions
@@ -296,13 +629,11 @@ QUESTIONS.forEach((q, i) => {
 
 // Progress tracking
 let answered = new Array(QUESTIONS.length).fill(false);
-
 document.querySelectorAll('input[type="radio"]').forEach(input => {
   input.addEventListener("change", () => {
     const idx = parseInt(input.name.replace("q", ""));
     answered[idx] = true;
     document.getElementById(`q-wrap-${idx}`).classList.add("answered");
-
     const count = answered.filter(Boolean).length;
     const pct = (count / QUESTIONS.length) * 100;
     document.getElementById("progressBar").style.width = pct + "%";
@@ -313,31 +644,22 @@ document.querySelectorAll('input[type="radio"]').forEach(input => {
 
 // Results
 let finalMessage = "";
-
 document.getElementById("submitBtn").addEventListener("click", () => {
-
-  // ── Anti-bot honeypot check ──────────────────────────────
-  // Real users never see or fill this field — bots do
+  // Anti-bot honeypot check
   if (document.getElementById("honeypot").value !== "") {
     console.warn("Bot detected — submission blocked.");
     return;
   }
-  // ─────────────────────────────────────────────────────────
-
   let score = 0;
   const failedTips = [];
-
   QUESTIONS.forEach((q, i) => {
     const val = parseInt(document.querySelector(`input[name="q${i}"]:checked`).value);
     score += val;
     if (val === 0) failedTips.push(q.tip);
   });
-
-  // Result display
   const result = document.getElementById("result");
   result.style.display = "block";
   document.getElementById("scoreDisplay").textContent = `${score} / 10`;
-
   if (score >= 8) {
     result.className = "low";
     finalMessage = "🟢 I scored LOW RISK on the MartellCyberTech Cyber Hygiene Check!";
@@ -354,11 +676,7 @@ document.getElementById("submitBtn").addEventListener("click", () => {
     document.getElementById("verdictDisplay").textContent = "🔴 High Risk";
     document.getElementById("messageDisplay").textContent = "Time to strengthen your security habits — start with the tips below.";
   }
-
-  // Save to Supabase
   saveResult(score, result.className, failedTips);
-
-  // Tips for failed questions
   const tipsList = document.getElementById("tipsList");
   tipsList.innerHTML = "";
   if (failedTips.length > 0) {
@@ -369,7 +687,6 @@ document.getElementById("submitBtn").addEventListener("click", () => {
     });
     document.getElementById("tips").style.display = "block";
   }
-
   document.getElementById("shareSection").style.display = "block";
   result.scrollIntoView({ behavior: "smooth", block: "start" });
 });
@@ -379,15 +696,60 @@ document.getElementById("twitterBtn").addEventListener("click", () => {
   const text = encodeURIComponent(finalMessage + " Take yours: " + window.location.href + " @martellcybertech");
   window.open("https://twitter.com/intent/tweet?text=" + text, "_blank");
 });
-
 document.getElementById("facebookBtn").addEventListener("click", () => {
   const url = encodeURIComponent(window.location.href);
   window.open("https://www.facebook.com/sharer/sharer.php?u=" + url, "_blank");
 });
-
 document.getElementById("copyBtn").addEventListener("click", () => {
   const text = finalMessage + " Take yours: " + window.location.href + " Tag @martellcybertech";
   navigator.clipboard.writeText(text).then(() => alert("Copied! Paste into Instagram and tag @martellcybertech."));
+});
+
+// ── Nav interactions ─────────────────────────────────────────
+function toggleDropdown() {
+  const dd = document.getElementById('resourcesDropdown');
+  const btn = dd.querySelector('.nav-dropdown-trigger');
+  const isOpen = dd.classList.toggle('open');
+  btn.setAttribute('aria-expanded', isOpen);
+}
+
+document.addEventListener('click', function(e) {
+  const dd = document.getElementById('resourcesDropdown');
+  if (!dd.contains(e.target)) {
+    dd.classList.remove('open');
+    dd.querySelector('.nav-dropdown-trigger').setAttribute('aria-expanded', 'false');
+  }
+});
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    const dd = document.getElementById('resourcesDropdown');
+    dd.classList.remove('open');
+    dd.querySelector('.nav-dropdown-trigger').setAttribute('aria-expanded', 'false');
+    const mobile = document.getElementById('mobileMenu');
+    const hamburger = document.getElementById('hamburger');
+    mobile.classList.remove('open');
+    mobile.setAttribute('aria-hidden', 'true');
+    hamburger.classList.remove('open');
+    hamburger.setAttribute('aria-expanded', 'false');
+  }
+});
+
+function toggleMobileMenu() {
+  const menu = document.getElementById('mobileMenu');
+  const btn = document.getElementById('hamburger');
+  const isOpen = menu.classList.toggle('open');
+  btn.classList.toggle('open', isOpen);
+  btn.setAttribute('aria-expanded', isOpen);
+  menu.setAttribute('aria-hidden', !isOpen);
+  document.getElementById('resourcesDropdown').classList.remove('open');
+}
+
+document.getElementById('mobileMenu').querySelectorAll('a').forEach(function(link) {
+  link.addEventListener('click', function() {
+    document.getElementById('mobileMenu').classList.remove('open');
+    document.getElementById('hamburger').classList.remove('open');
+  });
 });
 </script>
 
